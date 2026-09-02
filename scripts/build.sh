@@ -15,9 +15,12 @@ SRCS="${ROOT_DIR}/srcs"
 
 mkdir -p "${DISTS}/${VERSION}" "${SRCS}"
 
-# ==========================================
-# 👇 用户自定义构建逻辑 (示例)
-# ==========================================
+
+# ======================================================================
+
+PATCHES="${ROOT_DIR}/patches"
+BUILD_DIR="${SRCS}/${VERSION}"
+DIST_DIR="${DISTS}/${VERSION}"
 
 echo "🔧 Compiling ${UPSTREAM_OWNER}/${UPSTREAM_REPO} ${VERSION}..."
 
@@ -26,10 +29,9 @@ prepare()
 {
     echo "📦 [Prepare] Setting up build environment..."
     
-    # TODO: 在此处添加准备命令
-    # 例如：apt-get update && apt-get install -y build-essential
-    # 例如：git clone -b ${VERSION} --depth=1 https://github.com/aquasecurity/trivy ${SRCS}/${VERSION}
-    # 例如：patch -p1 < patches/loongarch-fix.patch
+    rm -rf ${SRCS}/${VERSION}
+    git clone -b ${VERSION} --depth=1 https://github.com/aquasecurity/trivy ${SRCS}/${VERSION}
+    cp config/goreleaser.yml ${SRCS}/${VERSION}
     
     echo "✅ [Prepare] Environment ready."
 }
@@ -39,10 +41,10 @@ build()
 {
     echo "🔨 [Build] Compiling source code..."
     
-    # TODO: 在此处添加编译命令
-    # 例如：make -j$(nproc) ARCH=loongarch64
-    # 例如：cmake -DCMAKE_BUILD_TYPE=Release .. && make
-    
+    (
+        cd ${BUILD_DIR}
+        goreleaser release --clean --skip=publish --skip=docker --skip=sign --skip=validate   
+    )
 
     echo "✅ [Build] Compilation finished."
 }
@@ -52,9 +54,9 @@ post_build()
 {
     echo "📦 [Post-Build] Organizing artifacts..."
     
-    # TODO: 在此处添加整理命令
-    # 例如：mkdir -p dists && cp binary dist/
-    # 例如：strip dist/binary
+    cp -a $BUILD_DIR/dist/*.deb $DIST_DIR/
+    cp -a $BUILD_DIR/dist/*.rpm $DIST_DIR/
+    cp -a $BUILD_DIR/dist/*.tar.gz $DIST_DIR/
     
     echo "✅ [Post-Build] Artifacts ready in ./dists/${VERSION}."
 }

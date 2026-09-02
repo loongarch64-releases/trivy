@@ -1,4 +1,4 @@
-FROM lcr.loongnix.cn/library/golang:1.25
+FROM lcr.loongnix.cn/library/golang:1.26.3
 
 RUN apt-get update && apt-get install -y \
     bash \
@@ -10,6 +10,12 @@ RUN apt-get update && apt-get install -y \
     libc6-dev \
     libseccomp-dev \
     && rm -rf /var/lib/apt/lists/*
+
+# 安装 goreleaser (loong64)
+RUN wget -q https://github.com/goreleaser/goreleaser/releases/download/v2.18.0/goreleaser_Linux_loong64.tar.gz \
+    && tar -xzf goreleaser_Linux_loong64.tar.gz \
+    && mv goreleaser /usr/local/bin/goreleaser \
+    && rm -f goreleaser_Linux_loong64.tar.gz
 
 WORKDIR /workspace
 
